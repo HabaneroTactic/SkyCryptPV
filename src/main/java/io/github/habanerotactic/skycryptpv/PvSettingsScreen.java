@@ -57,11 +57,15 @@ public class PvSettingsScreen extends Screen {
 		addRenderableWidget(new StepSlider(left, y, colWidth, "Page zoom", 50, 200, 10, (int) Math.round(PvConfig.zoom * 100),
 				v -> v + "%", v -> PvConfig.zoom = v / 100.0));
 		y += 24;
-		addRenderableWidget(CycleButton.onOffBuilder(PvConfig.hints)
-				.create(left, y, colWidth, 20, Component.literal("Hints"), (button, on) -> PvConfig.hints = on))
+		int half = (colWidth - 4) / 2;
+		addRenderableWidget(CycleButton.onOffBuilder(PvConfig.chatHint)
+				.create(left, y, half, 20, Component.literal("Chat hint"), (button, on) -> PvConfig.chatHint = on))
+				.setTooltip(Tooltip.create(Component.literal("Shows \"Click to /pv Name\" when you hover a name in chat.")));
+		addRenderableWidget(CycleButton.onOffBuilder(PvConfig.lookHint)
+				.create(left + colWidth - half, y, half, 20, Component.literal("Look hint"), (button, on) -> PvConfig.lookHint = on))
 				.setTooltip(Tooltip.create(Component.literal(
-						"Small tooltips saying how to /pv someone: when you hover a name in chat, and under the "
-								+ "crosshair when you look at a player.")));
+						"Shows \"Press J to /pv Name\" under the crosshair when you look at a player. The key still works "
+								+ "with this off.")));
 		y += 24;
 		addRenderableWidget(CycleButton.onOffBuilder(PvConfig.keepWarm)
 				.create(left, y, colWidth, 20, Component.literal("Keep browser warm"), (button, on) -> PvConfig.keepWarm = on))

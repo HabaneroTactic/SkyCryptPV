@@ -254,6 +254,16 @@ public class MenuSelfTest implements ClientModInitializer {
 					shot(mc, "chat-hint");
 					mc.gui.setScreen(null);
 					mc.gui.setScreen(new io.github.habanerotactic.skycryptpv.PvSettingsScreen(null));
+					// Park the cursor in the corner so no button tooltip covers the screenshot.
+					try {
+						for (String field : new String[]{"xpos", "ypos"}) {
+							java.lang.reflect.Field f = net.minecraft.client.MouseHandler.class.getDeclaredField(field);
+							f.setAccessible(true);
+							f.setDouble(mc.mouseHandler, 1);
+						}
+					} catch (ReflectiveOperationException e) {
+						LOG.warn("couldn't move the mouse", e);
+					}
 					next();
 				}
 			}

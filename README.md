@@ -1,6 +1,6 @@
 # SkyCrypt PV
 
-Lunar Client's `/pv`, but for Fabric. `/pv <player>` opens the actual [SkyCrypt](https://sky.shiiyu.moe) website inside Minecraft, so tabs, item hovers and everything else work the same as in your browser.
+Lunar Client's `/pv`, but as a normal Fabric mod, so you can use it without Lunar. `/pv <player>` opens the actual [SkyCrypt](https://sky.shiiyu.moe) website inside Minecraft, so tabs, item hovers and everything else work the same as in your browser.
 
 I made it because the profile viewers built into other mods kept breaking on me, and I just wanted SkyCrypt in-game.
 
@@ -14,8 +14,8 @@ Get it on [Modrinth](https://modrinth.com/mod/skycrypt-pv). It's for Minecraft 2
 
 - `/pv` opens your own profile, `/pv <player>` someone else's, and `/pv <player> <profile>` a specific one (e.g. `/pv HabaneroTactic Blueberry`). `/skycrypt` does the same thing.
 - Right-click a player on Hypixel and there's an eye of ender button in their profile menu, like NEU's old one.
-- Look at a player and press J.
-- Click someone's name in chat, or hold Cmd/Ctrl and click any name.
+- Look at a player and press J (you can change the key in Options → Controls → Key Binds).
+- Click someone's name in chat, or hold Cmd/Ctrl (also changeable) and click any name.
 
 Settings are in `/pv settings` or Mod Menu.
 

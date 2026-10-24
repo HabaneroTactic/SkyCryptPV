@@ -34,7 +34,10 @@ public final class PvConfig {
 	/** Plain-clicking the name of whoever sent a chat message opens their profile. */
 	public static boolean chatPlainClick = true;
 	/** "⌘+Click: /pv Name" next to chat names, and "[J] Name" under the crosshair. */
-	public static boolean hints = true;
+	/** "Click to /pv" hint when hovering a name in chat. */
+	public static boolean chatHint = true;
+	/** "Press J to /pv" hint under the crosshair when looking at a player. */
+	public static boolean lookHint = true;
 	/** Keep the page loaded (frozen) between views for instant reopening; off closes it completely instead. */
 	public static boolean keepWarm = true;
 	/** Who plain /pv opens. Empty = yourself. */
@@ -59,7 +62,10 @@ public final class PvConfig {
 			simpleMode = Boolean.parseBoolean(props.getProperty("simpleMode", "false"));
 			panelSize = clampPanel(Integer.parseInt(props.getProperty("panelSize", "100").trim()));
 			roundedCorners = Boolean.parseBoolean(props.getProperty("roundedCorners", "true"));
-			hints = Boolean.parseBoolean(props.getProperty("hints", "true"));
+			// Older versions had one "hints" setting for both.
+			String hints = props.getProperty("hints", "true");
+			chatHint = Boolean.parseBoolean(props.getProperty("chatHint", hints));
+			lookHint = Boolean.parseBoolean(props.getProperty("lookHint", hints));
 			keepWarm = Boolean.parseBoolean(props.getProperty("keepWarm", "true"));
 			chatPlainClick = Boolean.parseBoolean(props.getProperty("chatPlainClick", "true"));
 			defaultPlayer = props.getProperty("defaultPlayer", "").trim();
@@ -82,7 +88,8 @@ public final class PvConfig {
 		props.setProperty("simpleMode", Boolean.toString(simpleMode));
 		props.setProperty("panelSize", Integer.toString(panelSize));
 		props.setProperty("roundedCorners", Boolean.toString(roundedCorners));
-		props.setProperty("hints", Boolean.toString(hints));
+		props.setProperty("chatHint", Boolean.toString(chatHint));
+		props.setProperty("lookHint", Boolean.toString(lookHint));
 		props.setProperty("keepWarm", Boolean.toString(keepWarm));
 		props.setProperty("chatPlainClick", Boolean.toString(chatPlainClick));
 		props.setProperty("defaultPlayer", defaultPlayer);

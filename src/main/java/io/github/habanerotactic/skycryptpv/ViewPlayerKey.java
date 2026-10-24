@@ -41,7 +41,7 @@ public final class ViewPlayerKey {
 		HudElementRegistry.attachElementAfter(VanillaHudElements.CROSSHAIR,
 				Identifier.fromNamespaceAndPath(SkyCryptPV.MOD_ID, "look_hint"), (graphics, delta) -> drawHint(graphics));
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
-			lookTarget = PvConfig.hints && mc.gui.screen() == null && !key.isUnbound() ? lookedAtPlayer(mc) : null;
+			lookTarget = PvConfig.lookHint && mc.gui.screen() == null && !key.isUnbound() ? lookedAtPlayer(mc) : null;
 			while (key.consumeClick()) {
 				Player target = lookedAtPlayer(mc);
 				if (target != null) {

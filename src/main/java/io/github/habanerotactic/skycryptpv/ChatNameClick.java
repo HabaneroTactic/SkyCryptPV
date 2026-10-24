@@ -113,7 +113,7 @@ public final class ChatNameClick {
 	 * so it sits above (not on top of) Hypixel's own rank tooltip.
 	 */
 	private static void drawHint(Minecraft mc, Screen screen, GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-		if (!PvConfig.hints) {
+		if (!PvConfig.chatHint) {
 			return;
 		}
 		LineHit hit = lineAt(mc, mouseX, mouseY);
