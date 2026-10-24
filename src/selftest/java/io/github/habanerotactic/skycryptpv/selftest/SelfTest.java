@@ -27,23 +27,20 @@ import org.slf4j.LoggerFactory;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
-/**
- * Scripted end-to-end check, enabled with -Dskycryptpv.selftest=true:
- * runs /pv through a dispatcher that already has a competing /pv, then drives the screen
- * (scroll, click, zoom, name box) and saves a screenshot after each step.
- */
+// runs /pv (with a competing /pv already registered), then scrolls, zooms, uses the name box
+// and takes a screenshot after each step. enable with -Dskycryptpv.selftest=true
 public class SelfTest implements ClientModInitializer {
 
 	private static final Logger LOG = LoggerFactory.getLogger("SkyCrypt PV SelfTest");
 	private static final String PLAYER = System.getProperty("skycryptpv.selftest.player", "HabaneroTactic");
 	private static final String PROFILE = System.getProperty("skycryptpv.selftest.profile", "Blueberry");
 	private static final String OTHER_PLAYER = System.getProperty("skycryptpv.selftest.other", "Refraction");
-	/** Optional "x,y" click target as fractions of the page area, e.g. "0.5,0.3". */
+	// optional "x,y" click as fractions of the page, e.g. "0.5,0.3"
 	private static final String CLICK = System.getProperty("skycryptpv.selftest.click");
 	private static final long TIMEOUT = 600_000;
-	/** How long to let SkyCrypt fill in its data after the load event. */
+	// how long to wait for skycrypt to fill in data after loading
 	private static final long SETTLE = Long.getLong("skycryptpv.selftest.settle", 10_000);
-	/** Number of zoom out/in toggles to run after loading (for profiling Chromium's callbacks). */
+	// zoom in/out this many times after loading (for profiling)
 	private static final int ZOOM_STRESS = Integer.getInteger("skycryptpv.selftest.zoomstress", 0);
 	private int stressTicks;
 
@@ -123,7 +120,7 @@ public class SelfTest implements ClientModInitializer {
 							mc.getWindow().getWidth(), mc.getWindow().getHeight(),
 							mc.getWindow().getGuiScale(), browser.getCefBrowser().getZoomLevel());
 				}
-				// SkyCrypt fills in data client-side after the load event.
+				// skycrypt fills in data after the load event
 				if (Util.getMillis() - pageReadyAt > SETTLE && stressTicks < ZOOM_STRESS * 20) {
 					if (stressTicks == 0) {
 						LOG.info("SELFTEST zoomstress start");
@@ -146,7 +143,7 @@ public class SelfTest implements ClientModInitializer {
 			case 4 -> {
 				if (elapsed() > 2500) {
 					screenshot(mc, "scrolled-wheel");
-					// Trackpad-style: many small fractional deltas.
+					// trackpad: lots of small deltas
 					for (int i = 0; i < 20; i++) {
 						screen.mouseScrolled(screen.width / 2.0, screen.height / 2.0, 0, 0.3);
 					}
@@ -184,7 +181,6 @@ public class SelfTest implements ClientModInitializer {
 				if (elapsed() > SETTLE / 2) {
 					screenshot(mc, "zoomed-out");
 					key(screen, GLFW.GLFW_KEY_0, GLFW.GLFW_MOD_SUPER);
-					// Switch player through the toolbar name box.
 					key(screen, GLFW.GLFW_KEY_L, GLFW.GLFW_MOD_SUPER);
 					for (int i = 0; i < 40; i++) {
 						key(screen, GLFW.GLFW_KEY_BACKSPACE, 0);
@@ -224,7 +220,7 @@ public class SelfTest implements ClientModInitializer {
 		}
 	}
 
-	/** Mimics a session where another mod (e.g. Skyblocker) registered /pv first. */
+	// like when skyblocker registered /pv first
 	private void runPvCommand() {
 		CommandDispatcher<FabricClientCommandSource> dispatcher = new CommandDispatcher<>();
 		dispatcher.register(literal("pv").then(argument("username", StringArgumentType.word()).executes(ctx -> {

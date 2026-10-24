@@ -14,7 +14,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** -Dskycryptpv.selftest.mode=fps: average FPS with the background page active vs frozen. */
+// mode=fps: average fps with the background page active vs frozen
 public class FpsSelfTest implements ClientModInitializer {
 
 	private static final Logger LOG = LoggerFactory.getLogger("SkyCrypt PV FpsTest");
@@ -67,11 +67,10 @@ public class FpsSelfTest implements ClientModInitializer {
 				}
 			}
 			case 1 -> {
-				// Load a real profile (with SkyCrypt's animated 3D player model) in the background, like after
-				// joining Hypixel, then wait for it to finish loading.
+				// load a real profile (with the animated 3d model) in the background, like after joining hypixel
 				if (!loadedReal && mc.player != null && PvBrowser.get() != null && elapsed() > 5_000) {
 					loadedReal = true;
-					// A page that never stops animating (like a stuck spinner or a 3D model), to check freezing stops it.
+					// page that never stops animating, to check freezing actually stops it
 					PvBrowser.prefetch(Boolean.getBoolean("skycryptpv.selftest.busy")
 							? "data:text/html,<style>div{width:600px;height:600px;background:linear-gradient(red,blue);animation:s 1s linear infinite}@keyframes s{to{transform:rotate(360deg)}}</style><div></div><script>function f(){let x=0;for(let i=0;i<3e6;i++)x+=Math.sqrt(i);requestAnimationFrame(f)}f()</script>"
 							: io.github.habanerotactic.skycryptpv.SkyCryptPV.statsUrl("HabaneroTactic", null));

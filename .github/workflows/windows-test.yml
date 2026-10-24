@@ -1,6 +1,5 @@
-# Builds the mod on Windows and runs the in-game self-test (/pv, scroll, zoom, name box, Esc).
-# GitHub's machines have no GPU, so Minecraft runs on Mesa's software OpenGL (slow, but it renders).
-# Screenshots and the game log are uploaded as an artifact on every run.
+# builds on windows and runs the in-game selftest. no gpu here so it uses mesa's software opengl.
+# screenshots + log get uploaded every run
 name: Windows test
 
 on:
@@ -30,12 +29,11 @@ jobs:
       - name: Install software OpenGL (Mesa llvmpipe)
         shell: pwsh
         run: |
-          # Pinned version: a direct download needs no GitHub API call (those get rate-limited on shared runners).
+          # pinned version, the github api gets rate limited here
           $version = '26.2.4'
           Invoke-WebRequest "https://github.com/pal1000/mesa-dist-win/releases/download/$version/mesa3d-$version-release-msvc.7z" -OutFile mesa.7z
           7z x mesa.7z -omesa | Out-Null
-          # Only the desktop GL driver, next to java.exe. Mesa's EGL/GLES DLLs are left out so they can't
-          # shadow the ones Chromium ships.
+          # only the gl driver, mesa's egl/gles dlls would clash with chromium's
           foreach ($dll in 'opengl32.dll', 'libgallium_wgl.dll', 'libglapi.dll') {
             if (Test-Path "mesa/x64/$dll") { Copy-Item "mesa/x64/$dll" "$env:JAVA_HOME/bin/" }
           }
@@ -52,7 +50,7 @@ jobs:
         env:
           GALLIUM_DRIVER: llvmpipe
           MESA_GL_VERSION_OVERRIDE: '4.5'
-          # Software rendering is slow, so give SkyCrypt longer to fill in the profile before each screenshot.
+          # software rendering is slow, give skycrypt longer to load
           JAVA_TOOL_OPTIONS: -Dskycryptpv.selftest.settle=30000
         run: ./gradlew runSelftest --no-daemon
 

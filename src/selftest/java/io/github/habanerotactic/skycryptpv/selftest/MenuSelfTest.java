@@ -37,11 +37,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-/**
- * -Dskycryptpv.selftest.mode=menu: creates a world, opens a fake Hypixel "<name>'s Profile" menu, clicks the
- * SkyCrypt slot through the same event path a real click takes, checks the look-at-player keybind against a
- * fake player, and times how fast the viewer reopens with the warm browser.
- */
+// mode=menu: fake hypixel profile menu + button click, look-at key on a fake player,
+// chat clicks, and how fast the viewer reopens
 public class MenuSelfTest implements ClientModInitializer {
 
 	private static final Logger LOG = LoggerFactory.getLogger("SkyCrypt PV MenuTest");
@@ -92,7 +89,7 @@ public class MenuSelfTest implements ClientModInitializer {
 				}
 			}
 			case 1 -> {
-				// In the world, Chromium ready, and the background warm-up had a moment to start.
+				// in the world, chromium ready, warm-up had a moment to start
 				if (mc.player != null && mc.level != null && mc.gui.screen() == null && PvBrowser.isReady() && elapsed() > 3000) {
 					LOG.info("MENUTEST in world; warm browser exists: {}", PvBrowser.get() != null);
 					openFakeProfileMenu(mc);
@@ -119,7 +116,7 @@ public class MenuSelfTest implements ClientModInitializer {
 					AbstractContainerScreenAccessor pos = (AbstractContainerScreenAccessor) screen;
 					MouseButtonEvent click = new MouseButtonEvent(pos.skycryptpv$getLeftPos() + slot.x + 8,
 							pos.skycryptpv$getTopPos() + slot.y + 8, new MouseButtonInfo(GLFW.GLFW_MOUSE_BUTTON_LEFT, 0));
-					// Same order as MouseHandler: Fabric's allow event first, then the screen.
+					// same order as MouseHandler: fabric's event first, then the screen
 					boolean allowed = ScreenMouseEvents.allowMouseClick(screen).invoker().allowMouseClick(screen, click);
 					if (allowed) {
 						screen.mouseClicked(click, false);
@@ -168,7 +165,7 @@ public class MenuSelfTest implements ClientModInitializer {
 					}
 					shot(mc, "look-hint");
 					dummy.discard();
-					// Throttle the hidden page like after 15 s idle, then check reopening brings it back.
+					// throttle the hidden page like after 15s idle, then check reopening brings it back
 					PvBrowser.setActive(false);
 					throttledAt = now;
 					return;
@@ -254,7 +251,7 @@ public class MenuSelfTest implements ClientModInitializer {
 					shot(mc, "chat-hint");
 					mc.gui.setScreen(null);
 					mc.gui.setScreen(new io.github.habanerotactic.skycryptpv.PvSettingsScreen(null));
-					// Park the cursor in the corner so no button tooltip covers the screenshot.
+					// move the cursor away so no tooltip covers the screenshot
 					try {
 						for (String field : new String[]{"xpos", "ypos"}) {
 							java.lang.reflect.Field f = net.minecraft.client.MouseHandler.class.getDeclaredField(field);
@@ -295,7 +292,7 @@ public class MenuSelfTest implements ClientModInitializer {
 		contents.setItem(16, new ItemStack(Items.EMERALD));
 		contents.setItem(33, new ItemStack(Items.ENDER_CHEST));
 		contents.setItem(49, new ItemStack(Items.BARRIER));
-		// Like Hypixel: every empty slot holds a nameless glass pane (invisible with many resource packs).
+		// like hypixel: empty slots are nameless glass panes
 		for (int i = 0; i < 54; i++) {
 			if (contents.getItem(i).isEmpty()) {
 				ItemStack filler = new ItemStack(Items.GLASS_PANE);
@@ -325,7 +322,7 @@ public class MenuSelfTest implements ClientModInitializer {
 		this.dummy = dummy;
 	}
 
-	/** Clicks across the bottom of the chat; returns which names a click would open (without opening them). */
+	// clicks along the bottom of chat, returns which names would open
 	private java.util.Set<String> sweepChat(Minecraft mc, net.minecraft.client.gui.screens.Screen screen, int modifiers) {
 		java.util.Set<String> opened = new java.util.TreeSet<>();
 		SkyCryptPV.openInterceptor = name -> opened.add(name) || true;
