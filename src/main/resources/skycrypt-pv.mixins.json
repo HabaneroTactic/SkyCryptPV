@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "io.github.habanerotactic.skycryptpv.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "AbstractContainerScreenAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

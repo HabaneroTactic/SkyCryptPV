@@ -1,0 +1,5 @@
+{
+  "key.category.skycrypt-pv.main": "SkyCrypt PV",
+  "key.skycrypt-pv.view_player": "/pv the player you're looking at",
+  "key.skycrypt-pv.chat_click": "Hold + click a name in chat to /pv"
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "skycrypt-pv-selftest",
+  "version": "1.0.0",
+  "name": "SkyCrypt PV Self Test",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["io.github.habanerotactic.skycryptpv.selftest.SelfTest", "io.github.habanerotactic.skycryptpv.selftest.MenuSelfTest", "io.github.habanerotactic.skycryptpv.selftest.FpsSelfTest"]
+  },
+  "depends": {
+    "skycrypt-pv": "*"
+  }
+}

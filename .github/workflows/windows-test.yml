@@ -1,0 +1,77 @@
+# Builds the mod on Windows and runs the in-game self-test (/pv, scroll, zoom, name box, Esc).
+# GitHub's machines have no GPU, so Minecraft runs on Mesa's software OpenGL (slow, but it renders).
+# Screenshots and the game log are uploaded as an artifact on every run.
+name: Windows test
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'build.gradle', 'gradle.properties', '.github/workflows/windows-test.yml']
+  workflow_dispatch:
+
+jobs:
+  selftest:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew build --no-daemon
+        shell: bash
+
+      - name: Install software OpenGL (Mesa llvmpipe)
+        shell: pwsh
+        run: |
+          # Pinned version: a direct download needs no GitHub API call (those get rate-limited on shared runners).
+          $version = '26.2.4'
+          Invoke-WebRequest "https://github.com/pal1000/mesa-dist-win/releases/download/$version/mesa3d-$version-release-msvc.7z" -OutFile mesa.7z
+          7z x mesa.7z -omesa | Out-Null
+          # Only the desktop GL driver, next to java.exe. Mesa's EGL/GLES DLLs are left out so they can't
+          # shadow the ones Chromium ships.
+          foreach ($dll in 'opengl32.dll', 'libgallium_wgl.dll', 'libglapi.dll') {
+            if (Test-Path "mesa/x64/$dll") { Copy-Item "mesa/x64/$dll" "$env:JAVA_HOME/bin/" }
+          }
+          Write-Host "Mesa $version installed into $env:JAVA_HOME/bin"
+
+      - name: Skip first-launch screens
+        shell: bash
+        run: |
+          mkdir -p run
+          printf 'onboardAccessibility:false\ntutorialStep:none\nskipMultiplayerWarning:true\n' > run/options.txt
+
+      - name: Run self-test
+        shell: bash
+        env:
+          GALLIUM_DRIVER: llvmpipe
+          MESA_GL_VERSION_OVERRIDE: '4.5'
+          # Software rendering is slow, so give SkyCrypt longer to fill in the profile before each screenshot.
+          JAVA_TOOL_OPTIONS: -Dskycryptpv.selftest.settle=30000
+        run: ./gradlew runSelftest --no-daemon
+
+      - name: Check result
+        if: always()
+        shell: bash
+        run: |
+          log=run/logs/latest.log
+          grep -E 'SELFTEST|Exception|ERROR' "$log" | head -60 || true
+          if grep -q 'SELFTEST FAIL' "$log"; then echo "::error::Self-test reported a failure"; exit 1; fi
+          if ! grep -q 'SELFTEST DONE' "$log"; then echo "::error::Self-test did not finish"; exit 1; fi
+
+      - name: Upload screenshots and log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-selftest
+          path: |
+            run/screenshots/
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: ignore
