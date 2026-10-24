@@ -26,26 +26,21 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
-/**
- * Full-screen SkyCrypt page rendered by an embedded Chromium, with a small toolbar on top.
- * The page is rendered at the window's real pixel resolution so text stays sharp at any GUI scale.
- */
+// the viewer. page renders at the real window resolution so text stays sharp
 public class SkyCryptScreen extends Screen {
 
 	public static final int BAR = 22;
-	/** Corner radius of the smaller panel, in GUI pixels. */
 	private static final int CORNER_RADIUS = 6;
 	private static final int BAR_COLOR = 0xFF1E1E22;
 	private static final int BAR_BORDER = 0xFF34343A;
 	private static final int BACKGROUND = 0xFF141416;
 	private static final int TEXT = 0xFFE0E0E0;
 	private static final int TEXT_DIM = 0xFF8A8A92;
-	/** CSS pixels scrolled per unit of scroll input: a mouse wheel notch is 1 unit, trackpads send small fractions. */
+	// wheel notch = 1, trackpads send small fractions
 	private static final double WHEEL_PX = 100.0;
 	private static final double TRACKPAD_PX = 10.0;
-	/** If Chromium hasn't painted for this long, poke it (see {@link #tick()}). */
+	// if chromium hasn't painted for this long, poke it (see tick())
 	private static final long PAINT_WATCHDOG_MS = 2000;
-
 
 	@Nullable
 	private MCEFBrowser browser;
@@ -60,11 +55,9 @@ public class SkyCryptScreen extends Screen {
 	private EditBox findBox;
 	private boolean finding;
 	private int zoomLabelX;
-	/** Free toolbar space for the "Powered by SkyCrypt" label. */
 	private int brandLeft, brandRight;
 	private static final Component POWERED_BY = Component.literal("Powered by ")
 			.append(Component.literal("SkyCrypt").withColor(0xFF22C55E));
-	/** The page's area in GUI units. */
 	private int pageLeft, pageTop, pageWidth, pageHeight;
 	private boolean browserFocused = true;
 	private long zoomChangedAt = -1;
@@ -101,8 +94,6 @@ public class SkyCryptScreen extends Screen {
 		return PvBrowser.millisSinceLastPaint();
 	}
 
-	// ---------------------------------------------------------------- layout
-
 	@Override
 	protected void init() {
 		int[] rect = pageRect(width, height);
@@ -111,7 +102,7 @@ public class SkyCryptScreen extends Screen {
 		pageWidth = rect[2];
 		pageHeight = rect[3];
 
-		// In simple mode the toolbar widgets still exist (for shortcuts) but aren't shown.
+		// simple mode: toolbar widgets still exist for shortcuts, just hidden
 		int x = 2;
 		backButton = toolbar(iconButton("←", "Back", x, b -> goBack()));
 		x += 21;
@@ -123,7 +114,7 @@ public class SkyCryptScreen extends Screen {
 		int right = width - 2;
 		right -= 20;
 		if (PvConfig.simpleMode) {
-			// Just a small close button on the page's corner (above it, if the panel leaves room).
+			// just a small x on the corner
 			int closeY = pageTop >= 16 ? pageTop - 15 : pageTop + 1;
 			int closeX = pageTop >= 16 ? pageLeft + pageWidth - 14 : pageLeft + pageWidth - 15;
 			addRenderableWidget(Button.builder(Component.literal("✕"), b -> onClose())
@@ -183,7 +174,6 @@ public class SkyCryptScreen extends Screen {
 		return PvConfig.simpleMode ? widget : addRenderableWidget(widget);
 	}
 
-	/** {left, top, width, height} of the page in GUI units, from the style and size settings. */
 	public static int[] pageRect(int screenWidth, int screenHeight) {
 		int top = PvConfig.simpleMode ? 0 : BAR;
 		double size = PvConfig.panelSize / 100.0;
@@ -201,10 +191,8 @@ public class SkyCryptScreen extends Screen {
 
 	@Override
 	protected void setInitialFocus() {
-		// Keep keyboard focus on the page instead of highlighting the first toolbar button.
+		// keep focus on the page, not the first button
 	}
-
-	// ---------------------------------------------------------------- browser lifecycle
 
 	private void createBrowserIfReady() {
 		if (browser != null || error != null || !PvBrowser.isReady()) {
@@ -242,8 +230,8 @@ public class SkyCryptScreen extends Screen {
 		}
 		CefBrowser cef = browser.getCefBrowser();
 
-		// Re-zooming makes Chromium re-lay out the whole page, so only do it when needed: once the user stops
-		// clicking +/-, or when Chromium's zoom doesn't match (a new page starts at 100%).
+		// re-zooming re-lays out the whole page, so only do it once the user stops clicking +/-
+		// or if chromium reset it (new pages start at 100%)
 		long now = Util.getMillis();
 		if (zoomChangedAt >= 0) {
 			if (now - zoomChangedAt > 250) {
@@ -270,8 +258,8 @@ public class SkyCryptScreen extends Screen {
 			updateFavouriteButton();
 		}
 
-		// A static page legitimately stops painting, so this just re-sends the size and asks for one repaint.
-		// If Chromium had lost the view size, this is what brings the page back.
+		// a static page stops painting normally, so just resend the size and ask for a repaint
+		// (also fixes the page if chromium lost its size)
 		if (PvBrowser.millisSinceLastPaint() > PAINT_WATCHDOG_MS && now - lastNudge > PAINT_WATCHDOG_MS) {
 			lastNudge = now;
 			if (nudges++ == 3) {
@@ -284,7 +272,7 @@ public class SkyCryptScreen extends Screen {
 
 	@Override
 	public void removed() {
-		// The browser stays alive (and keeps its page) so the next /pv opens instantly.
+		// browser stays alive so the next /pv is instant
 		withBrowser(b -> b.setFocus(false));
 		browser = null;
 	}
@@ -293,8 +281,6 @@ public class SkyCryptScreen extends Screen {
 	public boolean isPauseScreen() {
 		return false;
 	}
-
-	// ---------------------------------------------------------------- toolbar actions
 
 	private void goBack() {
 		if (browser != null && browser.getCefBrowser().canGoBack()) {
@@ -312,7 +298,7 @@ public class SkyCryptScreen extends Screen {
 		withBrowser(b -> b.getCefBrowser().reload());
 	}
 
-	/** Chromium's own find-in-page: highlights every match and scrolls to the current one. */
+	// chromium's built-in find
 	private void runFind(String text, boolean forward, boolean findNext) {
 		if (text.isBlank()) {
 			withBrowser(b -> b.getCefBrowser().stopFinding(true));
@@ -382,14 +368,12 @@ public class SkyCryptScreen extends Screen {
 		zoomChangedAt = Util.getMillis();
 	}
 
-	// ---------------------------------------------------------------- rendering
-
 	@Override
 	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
 		if (PvConfig.panelSize >= 100 || minecraft.level == null) {
 			graphics.fill(0, 0, width, height, BACKGROUND);
 		} else {
-			// Panel mode: dim the game behind instead of hiding it.
+			// panel mode: dim the game instead of hiding it
 			graphics.fill(0, 0, width, height, 0x70000000);
 			if (!roundedCorners()) {
 				graphics.fill(pageLeft - 1, pageTop - 1, pageLeft + pageWidth + 1, pageTop + pageHeight + 1, BAR_BORDER);
@@ -399,7 +383,7 @@ public class SkyCryptScreen extends Screen {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-		// Until Chromium has switched to the requested profile, the texture still shows the previous page.
+		// until chromium switches page, the texture still shows the old one
 		boolean switching = PvBrowser.pendingUrl() != null;
 		GpuTextureView page = browser != null && !switching ? browser.getTextureView() : null;
 		if (page != null) {
@@ -428,10 +412,7 @@ public class SkyCryptScreen extends Screen {
 		}
 	}
 
-	/**
-	 * Credit requested by the SkyCrypt team: "Powered by SkyCrypt", like Lunar Client's viewer. In the toolbar when
-	 * there's room, otherwise under the panel or in the page's bottom-right corner, so it's always visible.
-	 */
+	// "Powered by SkyCrypt" (skycrypt asked for this). in the toolbar if there's room, otherwise under the panel
 	private void drawPoweredBy(GuiGraphicsExtractor graphics) {
 		int w = font.width(POWERED_BY);
 		if (!PvConfig.simpleMode && brandRight - brandLeft >= w) {
@@ -451,10 +432,7 @@ public class SkyCryptScreen extends Screen {
 		return PvConfig.roundedCorners && PvConfig.panelSize < 100;
 	}
 
-	/**
-	 * Draws the page with rounded corners: the middle in one piece, and the rows near the top and bottom edges as
-	 * 1-pixel strips that get shorter towards the corners. Done in real screen pixels so the curve stays smooth.
-	 */
+	// rounded corners: middle in one go, edge rows as 1px strips, in real pixels so the curve is smooth
 	private void blitRounded(GuiGraphicsExtractor graphics, GpuTextureView page) {
 		var sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
 		int s = scale();
@@ -513,8 +491,6 @@ public class SkyCryptScreen extends Screen {
 		}
 	}
 
-	// ---------------------------------------------------------------- input
-
 	private int scale() {
 		return minecraft.getWindow().getGuiScale();
 	}
@@ -570,7 +546,7 @@ public class SkyCryptScreen extends Screen {
 		if (super.mouseClicked(event, doubled)) {
 			return true;
 		}
-		// Clicking the dimmed game around a smaller panel closes it.
+		// click outside the panel to close
 		if (PvConfig.panelSize < 100 && event.y() >= (PvConfig.simpleMode ? 0 : BAR)) {
 			onClose();
 			return true;
@@ -598,7 +574,6 @@ public class SkyCryptScreen extends Screen {
 		if (browser == null || !isOverPage(x, y)) {
 			return super.mouseScrolled(x, y, horizontal, vertical);
 		}
-		// Trackpads send fractional amounts many times a second; wheels send whole notches.
 		long now = Util.getMillis();
 		if (vertical != Math.rint(vertical)) {
 			lastPreciseScroll = now;
@@ -687,8 +662,6 @@ public class SkyCryptScreen extends Screen {
 		}
 		return super.charTyped(event);
 	}
-
-	// ---------------------------------------------------------------- helpers
 
 	/** "https://sky.shiiyu.moe/stats/Name/Profile#Inventory" -> "Name" */
 	private static String playerFromUrl(String url) {

@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/** Look at a player and press the key (J by default) to open their SkyCrypt page. */
+// look at a player and press J
 public final class ViewPlayerKey {
 
 	private static final double RANGE = 48.0;
@@ -28,7 +28,6 @@ public final class ViewPlayerKey {
 	static final KeyMapping.Category CATEGORY =
 			KeyMapping.Category.register(Identifier.fromNamespaceAndPath(SkyCryptPV.MOD_ID, "main"));
 	private static KeyMapping key;
-	/** Player under the crosshair this tick, for the hint. */
 	@Nullable
 	private static Player lookTarget;
 
@@ -53,7 +52,6 @@ public final class ViewPlayerKey {
 		});
 	}
 
-	/** "[J] SkyCrypt: Name" just under the crosshair while you look at a player. */
 	private static void drawHint(GuiGraphicsExtractor graphics) {
 		Player target = lookTarget;
 		Minecraft mc = Minecraft.getInstance();
@@ -65,10 +63,7 @@ public final class ViewPlayerKey {
 		Hint.draw(graphics, text, graphics.guiWidth() / 2 - Hint.width(text) / 2, graphics.guiHeight() / 2 + 14);
 	}
 
-	/**
-	 * The real player your crosshair is on, up to 48 blocks away (further than you can click). Hypixel's NPCs
-	 * are fake players with non-version-4 UUIDs, so they're skipped.
-	 */
+	// player you're looking at, up to 48 blocks. skips hypixel npcs (not v4 uuids)
 	@Nullable
 	public static Player lookedAtPlayer(Minecraft mc) {
 		if (mc.player == null || mc.level == null) {

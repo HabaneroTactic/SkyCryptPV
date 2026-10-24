@@ -17,9 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 
-/** Opened from Mod Menu or /pv settings. Changes are saved when you press Done or Esc. */
 public class PvSettingsScreen extends Screen {
-
 
 	@Nullable
 	private final Screen parent;
@@ -38,7 +36,7 @@ public class PvSettingsScreen extends Screen {
 		int right = width / 2 + 5;
 		int top = Math.max(34, height / 2 - 70);
 
-		// Left column: how the viewer looks.
+		// left: how the viewer looks
 		int y = top;
 		addRenderableWidget(CycleButton.booleanBuilder(Component.literal("Simple"), Component.literal("Toolbar"), PvConfig.simpleMode)
 				.create(left, y, colWidth, 20, Component.literal("Style"), (button, simple) -> PvConfig.simpleMode = simple))
@@ -75,7 +73,7 @@ public class PvSettingsScreen extends Screen {
 								+ "nothing in the background, but /pv takes a few seconds longer.")));
 		int leftBottom = y + 20;
 
-		// Right column: ways to open a profile.
+		// right: ways to open a profile
 		y = top;
 		addRenderableWidget(CycleButton.booleanBuilder(Component.literal("SkyCrypt"), Component.literal("Other mods"), PvConfig.overridePv)
 				.create(right, y, colWidth, 20, Component.literal("/pv opens"), (button, on) -> PvConfig.overridePv = on))
@@ -154,7 +152,7 @@ public class PvSettingsScreen extends Screen {
 		return parsed != null && BuiltInRegistries.ITEM.containsKey(parsed);
 	}
 
-	/** A slider that snaps to steps, so you can drag straight to a value instead of cycling through them. */
+	// slider that snaps to steps
 	private static final class StepSlider extends AbstractSliderButton {
 
 		private final String label;

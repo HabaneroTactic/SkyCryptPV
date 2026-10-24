@@ -23,14 +23,11 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Adds a SkyCrypt button to the menu Hypixel opens when you right-click a player ("<name>'s Profile"), in the
- * empty slot under the ender chest like NEU used to. The player's page starts loading as soon as the menu opens.
- */
+// adds the pv button to hypixel's "<name>'s Profile" menu, under the ender chest like NEU
 public final class ProfileMenuButton {
 
 	private static final Pattern TITLE = Pattern.compile("([A-Za-z0-9_]{1,16})['’]s Profile");
-	/** Where the button goes if the ender chest can't be found: row 5, column 7 of Hypixel's layout. */
+	// fallback slot if the ender chest isn't found
 	private static final int FALLBACK_SLOT = 42;
 	@Nullable
 	private static ItemStack icon;
@@ -47,11 +44,11 @@ public final class ProfileMenuButton {
 			if (player == null) {
 				return;
 			}
-			// Preloading follows Keep browser warm, so one setting turns off every request the player didn't ask for.
+			// only preload if keep browser warm is on
 			if (PvConfig.keepWarm) {
 				PvBrowser.prefetch(SkyCryptPV.statsUrl(player, null));
 			}
-			// Drawn with the background so items' tooltips still appear on top of it.
+			// draw with the background so item tooltips stay on top
 			List<Component> tooltip = List.of(Component.literal("Click to run /pv " + player).withStyle(ChatFormatting.LIGHT_PURPLE));
 			ScreenEvents.afterBackground(screen).register((s, graphics, mouseX, mouseY, partialTick) ->
 					draw(container, graphics, mouseX, mouseY, tooltip));
@@ -69,14 +66,13 @@ public final class ProfileMenuButton {
 		});
 	}
 
-	/** "sssiuaaa's Profile" -> "sssiuaaa" */
+	// "sssiuaaa's Profile" -> "sssiuaaa"
 	@Nullable
 	public static String profileOwner(Component title) {
 		Matcher matcher = TITLE.matcher(StringUtil.stripColor(title.getString()));
 		return matcher.find() ? matcher.group(1) : null;
 	}
 
-	/** The empty slot under the ender chest, or the usual spot if that isn't empty. */
 	@Nullable
 	public static Slot buttonSlot(ContainerScreen screen) {
 		ChestMenu menu = screen.getMenu();
@@ -94,10 +90,7 @@ public final class ProfileMenuButton {
 		return stack.is(Items.ENDER_CHEST) || StringUtil.stripColor(stack.getHoverName().getString()).contains("Ender Chest");
 	}
 
-	/**
-	 * Empty, or Hypixel's filler: menus pad empty slots with nameless glass panes, which many resource packs make
-	 * invisible, so the slot looks empty but isn't.
-	 */
+	// hypixel fills empty slots with glass panes (often invisible with resource packs), count those as empty
 	private static boolean isFree(Slot slot) {
 		ItemStack stack = slot.getItem();
 		if (stack.isEmpty()) {
@@ -112,7 +105,6 @@ public final class ProfileMenuButton {
 		icon = null;
 	}
 
-	/** The configured button item (an eye of ender unless changed in config/skycrypt-pv.properties). */
 	private static ItemStack icon() {
 		if (icon == null) {
 			Identifier id = Identifier.tryParse(PvConfig.buttonItem);

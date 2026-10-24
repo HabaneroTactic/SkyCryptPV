@@ -2,16 +2,14 @@ package org.cef.browser;
 
 import java.awt.event.MouseWheelEvent;
 
-/**
- * Lives in org.cef.browser to reach CefBrowser_N's protected methods.
- * MCEF's own scroll handler only sends whole ±100px steps, which makes trackpads unusable.
- */
+// in org.cef.browser to use CefBrowser_N's protected methods.
+// mcef's scroll only does 100px steps, which is useless on trackpads
 public final class SkyCryptPvCef {
 
 	private SkyCryptPvCef() {
 	}
 
-	/** Scrolls by an exact pixel amount (positive = up), with the cursor at (x, y) in browser pixels. */
+	// scroll by exact pixels (positive = up)
 	public static void scroll(CefBrowser browser, int x, int y, int pixels) {
 		if (pixels == 0 || !(browser instanceof CefBrowser_N nativeBrowser)) {
 			return;
@@ -32,7 +30,6 @@ public final class SkyCryptPvCef {
 		));
 	}
 
-	/** Asks Chromium to repaint the whole view. */
 	public static void invalidate(CefBrowser browser) {
 		if (browser instanceof CefBrowser_N nativeBrowser) {
 			nativeBrowser.invalidate();

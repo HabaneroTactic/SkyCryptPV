@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-/** Tiny persisted settings: config/skycrypt-pv.properties */
+// settings, saved in config/skycrypt-pv.properties
 public final class PvConfig {
 
 	public static final double MIN_ZOOM = 0.5;
@@ -19,30 +19,21 @@ public final class PvConfig {
 
 	private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve(SkyCryptPV.MOD_ID + ".properties");
 
-	/** Page zoom on top of the display's pixel density. 1.0 = same size as a normal desktop browser. */
+	// 1.0 = same size as a normal browser
 	public static double zoom = 1.0;
-	/** Replace other mods' /pv (e.g. Skyblocker's) with this one. /skycrypt always works regardless. */
 	public static boolean overridePv = true;
-	/** Item shown as the PV button in Hypixel's profile menu, e.g. minecraft:ender_eye or minecraft:player_head. */
 	public static String buttonItem = "minecraft:ender_eye";
-	/** Lunar-style: no toolbar, just the page and a small close button. */
+	// lunar style, no toolbar
 	public static boolean simpleMode = false;
-	/** Size of the viewer as a percentage of the screen. Below 100 the game stays visible around it. */
+	// % of the screen, below 100 the game shows around it
 	public static int panelSize = 100;
-	/** Round the panel's corners when it isn't full screen. */
 	public static boolean roundedCorners = true;
-	/** Plain-clicking the name of whoever sent a chat message opens their profile. */
 	public static boolean chatPlainClick = true;
-	/** "⌘+Click: /pv Name" next to chat names, and "[J] Name" under the crosshair. */
-	/** "Click to /pv" hint when hovering a name in chat. */
 	public static boolean chatHint = true;
-	/** "Press J to /pv" hint under the crosshair when looking at a player. */
 	public static boolean lookHint = true;
-	/** Keep the page loaded (frozen) between views for instant reopening; off closes it completely instead. */
 	public static boolean keepWarm = true;
-	/** Who plain /pv opens. Empty = yourself. */
+	// empty = yourself
 	public static String defaultPlayer = "";
-	/** Starred players, always suggested by /pv tab-complete. */
 	public static final List<String> favourites = new ArrayList<>();
 
 	private PvConfig() {
@@ -62,7 +53,7 @@ public final class PvConfig {
 			simpleMode = Boolean.parseBoolean(props.getProperty("simpleMode", "false"));
 			panelSize = clampPanel(Integer.parseInt(props.getProperty("panelSize", "100").trim()));
 			roundedCorners = Boolean.parseBoolean(props.getProperty("roundedCorners", "true"));
-			// Older versions had one "hints" setting for both.
+			// old versions had one "hints" setting for both
 			String hints = props.getProperty("hints", "true");
 			chatHint = Boolean.parseBoolean(props.getProperty("chatHint", hints));
 			lookHint = Boolean.parseBoolean(props.getProperty("lookHint", hints));
@@ -105,7 +96,7 @@ public final class PvConfig {
 		return favourites.stream().anyMatch(name -> name.equalsIgnoreCase(player));
 	}
 
-	/** Adds or removes a favourite; returns true if the player is now a favourite. */
+	// returns true if they're now a favourite
 	public static boolean toggleFavourite(String player) {
 		boolean added = !isFavourite(player);
 		if (added) {

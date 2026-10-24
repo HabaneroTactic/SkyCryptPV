@@ -18,7 +18,7 @@ public class SkyCryptPV implements ClientModInitializer {
 
 	private static boolean warmedUp;
 	private static int quietTicks;
-	/** Test hook: return true to swallow an open request. */
+	// for the selftest
 	@Nullable
 	public static java.util.function.Predicate<String> openInterceptor;
 
@@ -30,11 +30,10 @@ public class SkyCryptPV implements ClientModInitializer {
 		ViewPlayerKey.register();
 		ChatNameClick.register();
 		PvBrowser.registerShutdown();
-		// Once in a world, open Chromium in the background with your own profile, so the first /pv is fast.
+		// once in a world, start chromium in the background with your own profile so the first /pv is fast
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
-			// Loading Chromium swaps out the process's memory allocator, which can corrupt memory on macOS if other
-			// threads are busy at that moment (it crashed ~1 in 5 launches during startup). So wait until the
-			// loading screen is gone and the game has been idle for a few seconds.
+			// loading chromium on mac can corrupt memory if other threads are busy (crashed ~1 in 5 launches),
+			// so wait till the game's been idle for a few secs
 			if (!PvBrowser.isStarted()) {
 				quietTicks = mc.gui.overlay() == null ? quietTicks + 1 : 0;
 				if (quietTicks >= 60) {
@@ -57,10 +56,7 @@ public class SkyCryptPV implements ClientModInitializer {
 		return url;
 	}
 
-	/**
-	 * Opens the viewer on the next client tick. Opening it straight from a command handler would be
-	 * undone by the chat screen closing itself right after the command is sent.
-	 */
+	// open next tick, otherwise the chat screen closing after the command closes it again
 	public static void open(String player, @Nullable String profile) {
 		if (openInterceptor != null && openInterceptor.test(player)) {
 			return;

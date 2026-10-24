@@ -28,7 +28,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 public final class PvCommand {
 
-	/** Runs after every other mod's client commands, so our /pv replaces theirs instead of merging with it. */
+	// register after other mods so our /pv replaces theirs (e.g. skyblocker's)
 	private static final Identifier LATE_PHASE = Identifier.fromNamespaceAndPath(SkyCryptPV.MOD_ID, "late");
 	private static final Pattern USERNAME = Pattern.compile("[A-Za-z0-9_]{1,16}");
 	private static final List<String> PROFILE_NAMES = List.of(
@@ -79,10 +79,7 @@ public final class PvCommand {
 		return 1;
 	}
 
-	/**
-	 * Names worth suggesting: real players in the tab list and nearby. Hypixel fills the tab list and
-	 * world with fake entries (NPCs, tab columns) whose UUIDs are not version 4, so those are skipped.
-	 */
+	// real players only. hypixel's fake tab list entries and npcs don't have v4 uuids
 	private static TreeSet<String> knownPlayers() {
 		TreeSet<String> names = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 		names.addAll(PvConfig.favourites);
@@ -111,7 +108,7 @@ public final class PvCommand {
 		}
 	}
 
-	/** Brigadier has no remove API, and merging two /pv trees would make the arguments ambiguous. */
+	// brigadier can't remove commands, and merging two /pv's breaks the arguments
 	private static void removeRootCommand(CommandDispatcher<FabricClientCommandSource> dispatcher, String name) {
 		CommandNode<FabricClientCommandSource> root = dispatcher.getRoot();
 		if (root.getChild(name) == null) {

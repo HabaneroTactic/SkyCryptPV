@@ -3,7 +3,7 @@ package io.github.habanerotactic.skycryptpv;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 
-/** Only loaded by Mod Menu, so Mod Menu stays optional. */
+// only loaded when mod menu is installed
 public class ModMenuIntegration implements ModMenuApi {
 
 	@Override

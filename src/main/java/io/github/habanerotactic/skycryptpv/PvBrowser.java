@@ -24,18 +24,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-/**
- * The one embedded browser, kept alive for the whole session. Starting Chromium's page process and SkyCrypt's
- * scripts is most of the wait, so the viewer reuses this browser and pages can be loaded before the viewer opens.
- */
+// one browser for the whole session so /pv doesn't have to start chromium every time
 public final class PvBrowser {
 
-	/**
-	 * Every call into Chromium goes through this one thread, in order. On macOS Chromium's UI thread is the game's
-	 * main thread, so a call made from there runs synchronously and calls back into Java from deep inside the
-	 * game's input/tick stack, where those callbacks overflow the stack. A dropped view-size callback then leaves
-	 * the page frozen. Called from any other thread, Chromium queues the work for its own message loop instead.
-	 */
+	// all chromium calls go through this thread. on mac, calling from the main thread runs stuff
+	// synchronously deep in the game's stack and overflows it, which froze the page
 	private static final ExecutorService CHROMIUM = Executors.newSingleThreadExecutor(runnable -> {
 		Thread thread = new Thread(runnable, "SkyCrypt PV browser");
 		thread.setDaemon(true);
@@ -51,12 +44,8 @@ public final class PvBrowser {
 			.map(mod -> mod.getMetadata().getVersion().getFriendlyString().replaceAll("\\+.*", ""))
 			.orElse("1.0.0");
 
-	/**
-	 * MCEF labels the browser "MCEF-Modern", and SkyCrypt's Cloudflare bot protection then makes its profile-data
-	 * requests fail ("500 Failed to fetch ... section data"). Presenting as the regular Chrome this engine is fixes it.
-	 * The claimed OS matches the real one, so the identity stays consistent with everything else the browser sends.
-	 * "SkyCryptPV/<version>" stays on the end so SkyCrypt can always tell the mod's traffic apart.
-	 */
+	// mcef's default user agent gets blocked by cloudflare (500s on profile data), so use normal chrome's.
+	// matches the real OS, and SkyCryptPV/<version> on the end so skycrypt can tell it's the mod (they ok'd this)
 	private static final String USER_AGENT_OVERRIDE = userAgentOverride();
 
 	private static String userAgentOverride() {
@@ -93,11 +82,10 @@ public final class PvBrowser {
 				   "fullVersion": "146.0.7680.179", "platform": "%s", "platformVersion": "%s", "architecture": "%s", "model": "", "mobile": false}}
 				""".formatted(os, MOD_VERSION, platform, hintPlatform, hintVersion, arch);
 	}
-	/** Kept open: the identity override only lasts while its DevTools session does. */
+	// keep this open, the user agent override only lasts while it's alive
 	@Nullable
 	private static CefDevToolsClient devTools;
 	private static volatile int autoRetries;
-	/** Freeze the hidden page this long after it was last used. */
 	private static final long FREEZE_AFTER_MS = 15_000;
 	private static boolean active = true;
 	private static long lastUsed;
@@ -110,10 +98,7 @@ public final class PvBrowser {
 	private PvBrowser() {
 	}
 
-	/**
-	 * Closes the browser before MCEF shuts Chromium down on exit. Shutting Chromium down with a browser still open
-	 * can hang until the game's shutdown watchdog kills it.
-	 */
+	// close the browser before mcef shuts chromium down, otherwise quitting can hang
 	public static void registerShutdown() {
 		Identifier early = Identifier.fromNamespaceAndPath(SkyCryptPV.MOD_ID, "close_browser");
 		ClientLifecycleEvents.CLIENT_STOPPING.addPhaseOrdering(early, Event.DEFAULT_PHASE);
@@ -123,10 +108,8 @@ public final class PvBrowser {
 				browser = null;
 			}
 		});
-		// MCEF shuts Chromium down (in the default phase) from another thread, and on macOS that work has to run on
-		// the main thread. If the game's main thread has already moved on, both wait on each other until the
-		// shutdown watchdog kills the game and writes a crash report. Keep the main thread processing events here
-		// until Chromium has finished.
+		// on mac chromium's shutdown needs the main thread, so keep pumping events until it's done
+		// (otherwise both wait on each other and the watchdog crashes the game)
 		Identifier late = Identifier.fromNamespaceAndPath(SkyCryptPV.MOD_ID, "finish_chromium_shutdown");
 		ClientLifecycleEvents.CLIENT_STOPPING.addPhaseOrdering(Event.DEFAULT_PHASE, late);
 		ClientLifecycleEvents.CLIENT_STOPPING.register(late, mc -> {
@@ -150,7 +133,6 @@ public final class PvBrowser {
 		});
 	}
 
-	/** Starts Chromium in the background (downloading it on first launch). */
 	public static void start() {
 		started = true;
 		MCEFApi.initialize();
@@ -178,10 +160,7 @@ public final class PvBrowser {
 		return Util.getMillis() - lastPaint;
 	}
 
-	/**
-	 * Shows {@code url} in the shared browser, creating it if Chromium is ready. Doesn't reload if that page is
-	 * already showing, so reopening the same profile is instant.
-	 */
+	// doesn't reload if it's already on that page, so reopening is instant
 	@Nullable
 	public static MCEFBrowser open(String url) {
 		setActive(true);
@@ -198,21 +177,18 @@ public final class PvBrowser {
 		return browser;
 	}
 
-	/** The page last asked for, until Chromium has actually navigated to it. */
 	@Nullable
 	public static String pendingUrl() {
 		return pendingUrl;
 	}
 
-	/**
-	 * A load requested while another is still starting (e.g. the background warm-up of your own profile) can be
-	 * dropped by Chromium, so keep asking for the pending page until it's the one showing.
-	 */
+	// chromium sometimes drops a load if another one is still starting (like the warm-up),
+	// so keep retrying until it shows
 	public static void tick() {
 		if (browser == null) {
 			return;
 		}
-		// Freeze the page once nobody is looking at it, so it costs nothing during normal play.
+		// freeze the page when nobody's looking at it
 		boolean viewing = Minecraft.getInstance().gui.screen() instanceof SkyCryptScreen;
 		if (viewing) {
 			lastUsed = Util.getMillis();
@@ -238,7 +214,7 @@ public final class PvBrowser {
 		}
 	}
 
-	/** Starts loading a page in the background at the viewer's size, so it's ready when the viewer opens. */
+	// load a page in the background so it's ready when the viewer opens
 	public static void prefetch(String url) {
 		if (error != null || !isReady()) {
 			return;
@@ -255,7 +231,7 @@ public final class PvBrowser {
 		}
 		CompletableFuture<MCEFApi> future = MCEFApi.initialize().getFuture();
 		try {
-			// Start blank: the identity has to be set before SkyCrypt's first request.
+			// start blank, the user agent has to be set before skycrypt's first request
 			browser = future.join().createBrowser("about:blank", false);
 		} catch (RuntimeException e) {
 			Throwable cause = e.getCause() != null ? e.getCause() : e;
@@ -276,10 +252,7 @@ public final class PvBrowser {
 		});
 	}
 
-	/**
-	 * Sets the Chrome identity (see {@link #USER_AGENT_OVERRIDE}) and logs failed SkyCrypt data requests. DevTools
-	 * only works once Chromium has finished creating the browser, so retry for a few seconds.
-	 */
+	// devtools only works once the browser is fully created, so retry for a bit
 	private static void setUpDevTools(MCEFBrowser b) {
 		for (int attempt = 0; attempt < 25; attempt++) {
 			try {
@@ -305,10 +278,7 @@ public final class PvBrowser {
 		}
 	}
 
-	/**
-	 * Logs SkyCrypt's failed requests, and reloads (up to twice) when its server errors. Those "500 Failed to fetch
-	 * ... section data" errors are usually temporary on SkyCrypt's side and go away on a retry.
-	 */
+	// log failed skycrypt requests and reload (max 2 times) on 500s, those are usually temporary
 	private static void logFailedRequest(CefDevToolsClient client, String method, String params) {
 		if (!"Network.responseReceived".equals(method) || !params.contains("shiiyu.moe")) {
 			return;
@@ -335,11 +305,7 @@ public final class PvBrowser {
 		}
 	}
 
-	/**
-	 * A hidden page is limited to 1 frame a second. Animations, the 3D player model and redraws all run per frame, so
-	 * this removes nearly all of its background cost; the page stays loaded so reopening is still instant.
-	 * (Freezing the page through DevTools was tried and left it stuck when reopened.)
-	 */
+	// hidden page runs at 1 fps so it basically costs nothing (freezing it with devtools broke reopening)
 	public static void setActive(boolean on) {
 		lastUsed = Util.getMillis();
 		if (active == on || browser == null) {
@@ -349,7 +315,7 @@ public final class PvBrowser {
 		call(b -> b.getCefBrowser().setWindowlessFrameRate(on ? 30 : 1));
 	}
 
-	/** Shuts the page down completely (Keep browser warm = off). The next /pv starts a fresh one. */
+	// keep browser warm off: close the page fully
 	private static void closeBrowser() {
 		MCEFBrowser closing = browser;
 		browser = null;
@@ -365,7 +331,6 @@ public final class PvBrowser {
 		return active;
 	}
 
-	/** Runs a Chromium call off the game thread (see {@link #CHROMIUM}). */
 	public static void call(Consumer<MCEFBrowser> action) {
 		MCEFBrowser target = browser;
 		if (target == null) {
@@ -386,7 +351,6 @@ public final class PvBrowser {
 		call(b -> b.resize(width, height));
 	}
 
-	/** Pixel size of the page area in the full-screen viewer. */
 	public static int[] viewerSize() {
 		Window window = Minecraft.getInstance().getWindow();
 		int scale = window.getGuiScale();
@@ -394,14 +358,14 @@ public final class PvBrowser {
 		return new int[]{rect[2] * scale, rect[3] * scale};
 	}
 
-	/** Device pixels per CSS pixel: the display's density (2 on Retina) times the user's zoom. */
+	// display density (2 on retina) * zoom
 	public static double zoomFactor() {
 		Window window = Minecraft.getInstance().getWindow();
 		double density = window.getScreenWidth() > 0 ? (double) window.getWidth() / window.getScreenWidth() : 1.0;
 		return Math.max(0.25, density * PvConfig.zoom);
 	}
 
-	/** Chromium zoom levels are exponential: factor = 1.2 ^ level */
+	// chromium zoom: factor = 1.2 ^ level
 	public static double targetZoomLevel() {
 		return Math.log(zoomFactor()) / Math.log(1.2);
 	}

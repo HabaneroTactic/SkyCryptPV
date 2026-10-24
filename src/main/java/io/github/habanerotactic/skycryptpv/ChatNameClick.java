@@ -29,18 +29,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Click a player's name in chat to open their SkyCrypt page, like NEU did.
- * <ul>
- *   <li>Holding the "click any name" key (Left Cmd/Ctrl by default, rebindable) + click works on any name.</li>
- *   <li>A plain click works on a message's sender name (party, guild, DMs, public chat, Party Finder joins), but
- *   only if Hypixel hasn't attached its own click action to it, so Hypixel's own features keep working.</li>
- * </ul>
- */
+// click a name in chat to /pv them (like NEU). plain click works on whoever sent the message,
+// hold cmd/ctrl to click any name
 public final class ChatNameClick {
 
 	private static final Pattern NAME = Pattern.compile("[A-Za-z0-9_]{3,16}");
-	/** Where the sender's name sits in Hypixel's chat formats; group 1 is the name. */
+	// where the sender name is in each of hypixel's chat formats (group 1)
 	private static final List<Pattern> SENDER_PATTERNS = List.of(
 			// "Party Finder > Name joined the dungeon group! (Mage Level 40)"
 			Pattern.compile("^Party Finder > ([A-Za-z0-9_]{1,16}) joined the"),
@@ -70,7 +64,7 @@ public final class ChatNameClick {
 		});
 	}
 
-	/** Returns true if the click opened a profile (and should not reach the chat screen). */
+	// true if we opened a profile, so chat doesn't also handle the click
 	private static boolean handleClick(Minecraft mc, MouseButtonEvent event) {
 		if (event.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT) {
 			return false;
@@ -90,7 +84,6 @@ public final class ChatNameClick {
 		return false;
 	}
 
-	/** Whether the "hold to click any name" key is down; any key or mouse button can be bound to it. */
 	private static boolean holdKeyDown(Minecraft mc) {
 		if (holdKey.isUnbound()) {
 			return false;
@@ -102,16 +95,13 @@ public final class ChatNameClick {
 				: InputConstants.isKeyDown(mc.getWindow(), bound.getValue());
 	}
 
-	/** A plain click opens the sender's name, unless Hypixel already made that name do something. */
+	// skip names hypixel already made clickable so their stuff still works
 	private static boolean plainClickOpens(LineHit hit) {
 		boolean hasOwnAction = hit.style != null && hit.style.getClickEvent() != null;
 		return PvConfig.chatPlainClick && !hasOwnAction && isSenderName(hit.text, hit.index);
 	}
 
-	/**
-	 * While hovering a player's name, shows how to open their profile in a tooltip-style box just above the cursor,
-	 * so it sits above (not on top of) Hypixel's own rank tooltip.
-	 */
+	// hint goes above the cursor so it doesn't cover hypixel's rank tooltip
 	private static void drawHint(Minecraft mc, Screen screen, GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 		if (!PvConfig.chatHint) {
 			return;
@@ -165,7 +155,6 @@ public final class ChatNameClick {
 	private record LineHit(String text, int index, @Nullable Style style) {
 	}
 
-	/** Asks the chat to lay out its visible lines and finds the line and character under the cursor. */
 	@Nullable
 	private static LineHit lineAt(Minecraft mc, int mouseX, int mouseY) {
 		Font font = mc.font;
@@ -206,7 +195,7 @@ public final class ChatNameClick {
 			if (hit != null) {
 				return;
 			}
-			// Chat lines are drawn scaled/translated; map the cursor into the line's own coordinates.
+			// chat lines are scaled, so convert the mouse pos into line coords
 			Matrix3x2fc pose = params.pose();
 			Vector2f local = new Matrix3x2f(pose).invert().transformPosition(new Vector2f(mouseX, mouseY));
 			if (local.y < y || local.y >= y + font.lineHeight) {
