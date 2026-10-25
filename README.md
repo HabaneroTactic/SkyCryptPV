@@ -2,7 +2,7 @@
 
 Lunar Client's `/pv`, but as a normal Fabric mod, so you can use it without Lunar. `/pv <player>` opens the actual [SkyCrypt](https://sky.shiiyu.moe) website inside Minecraft, so tabs, item hovers and everything else work the same as in your browser.
 
-I made it because the profile viewers built into other mods kept breaking on me, and I just wanted SkyCrypt in-game.
+I made it because the profile viewers built into other mods were inaccurate and hard to navigate, and I just wanted SkyCrypt in-game.
 
 **Powered by SkyCrypt.** This mod is unofficial and isn't affiliated with or endorsed by SkyCrypt or Hypixel. If something's wrong with the mod, please open an [issue](https://github.com/HabaneroTactic/SkyCryptPV/issues) here instead of bothering the SkyCrypt team.
 
