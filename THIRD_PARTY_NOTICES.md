@@ -1,6 +1,6 @@
 # Third-party notices
 
-SkyCrypt PV's own code is MIT-licensed (see `LICENSE`). It builds on these projects:
+SkyCrypt PV's own code is all rights reserved (see `LICENSE`). It builds on these projects, which keep their own licenses:
 
 | Project | How it's used | License |
 | --- | --- | --- |

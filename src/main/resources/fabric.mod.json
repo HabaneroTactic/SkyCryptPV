@@ -11,7 +11,7 @@
     "sources": "https://github.com/HabaneroTactic/SkyCryptPV",
     "issues": "https://github.com/HabaneroTactic/SkyCryptPV/issues"
   },
-  "license": "MIT",
+  "license": "LicenseRef-All-Rights-Reserved",
   "icon": "assets/skycrypt-pv/icon.png",
   "environment": "client",
   "entrypoints": {

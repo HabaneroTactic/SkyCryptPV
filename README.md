@@ -42,4 +42,4 @@ The jar ends up in `build/libs/`.
 - [MCEF Modern](https://github.com/DimasKama/mcef-modern) by DimasKama for the embedded browser (bundled, LGPL-2.1).
 - Lunar Client's `/pv` and [NotEnoughUpdates](https://github.com/NotEnoughUpdates/NotEnoughUpdates)' profile viewer button for the ideas.
 
-MIT licensed. Other licenses are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+All rights reserved. The code is public so you can see what it does, and you're welcome to build it yourself, but please don't re-upload it or release your own version without asking. Details in [LICENSE](LICENSE), and other projects' licenses are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
